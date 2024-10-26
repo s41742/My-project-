@@ -1,5 +1,5 @@
 ---
-  title: "My project"
+title: "My project"
 author: "Sabrina Xu"
 date: "2024-10-10"
 output: "github_document"
@@ -10,5 +10,148 @@ library(haven)
 library(dplyr)
 library(ggplot2)
 
+list.files("/Users/xushimin/Downloads/ICPSR_36380 2/DS0001")
+
+ori_data <-load("/Users/xushimin/Downloads/ICPSR_36380 2/DS0001/36380-0001-Data.rda")
 
 ```
+
+```{r}
+#Find my data
+
+variables <- c("ME1J", "PEA14", "PEA13", "PEA18", "PEA15", "PEA12", "PEA18_1", "PEA16", "SS7", "SS20", "SEX")
+
+
+found_vars <- grep(paste(variables, collapse = "|"), names(da36380.0001), value = TRUE)
+
+
+print(found_vars)
+```
+
+```{r}
+
+selected_data <- da36380.0001[, c("SEX", "SS7", "SS20", "PEA12", "PEA13", "PEA14", "PEA15", "PEA16", "PEA18", "PEA18_1", "ME1J", "AS4", "SEXDUM")]
+
+head(selected_data)
+
+
+```
+
+```{r}
+
+
+selected_data <- selected_data %>%
+  mutate(Emotional_Stability = rowMeans(cbind(PEA14, PEA13, PEA18, PEA15, PEA12, PEA18_1, PEA16)),
+        SWR = rowMeans(cbind(SS7,SS20)))
+
+head(selected_data)
+
+```
+```{r}
+
+ggplot(selected_data, aes(x = Emotional_Stability)) + 
+  geom_histogram(binwidth = 0.5, fill = "skyblue") + 
+  theme_classic()
+
+ggplot(selected_data, aes(x = Emotional_Stability)) + 
+  geom_density(adjust = 1.5, fill = "skyblue", alpha = 0.4) + 
+  theme_classic()
+
+qq <- ggplot(selected_data, aes(sample = Emotional_Stability)) + 
+  geom_qq() + 
+  geom_qq_line() + 
+  theme_classic()
+
+# Normality test (Shapiro-Wilk)
+shapiro.test(selected_data$Emotional_Stability)
+
+```
+
+```{r}
+
+#data trransfromation
+
+selected_data$Emotional_Stability_log <- log10(selected_data$Emotional_Stability + 1)
+```
+
+```{r}
+#chenck normality again
+ggplot(selected_data, aes(x = Emotional_Stability_log)) + 
+  geom_histogram(binwidth = 0.25, fill = "skyblue") + 
+  theme_classic()
+
+ggplot(selected_data, aes(x = Emotional_Stability_log)) + 
+  geom_density(adjust = 1.5, fill = "skyblue", alpha = 0.4) + 
+  theme_classic()
+
+qq <- ggplot(selected_data, aes(sample = Emotional_Stability_log)) + 
+  geom_qq() + 
+  geom_qq_line() + 
+  theme_classic()
+
+# Normality test (Shapiro-Wilk)
+shapiro.test(selected_data$Emotional_Stability_log)
+
+
+```
+
+```{r}
+#sqrt trans
+selected_data$Emotional_Stability_sqrt <- sqrt(selected_data$Emotional_Stability + 1)
+
+shapiro.test(selected_data$Emotional_Stability_sqrt)
+
+```
+```{r}
+
+
+library(haven)
+library(bruceR)
+library(dplyr)
+library(ggstatsplot)
+library(performance)
+library(sjPlot)
+
+#step 1: build a model
+model<-lm(SWR ~ Emotional_Stability + ME1J, data = selected_data)
+
+
+#step 2: check the assumptions
+check_model(model)
+
+#step 3: summarize results; add ,std = TRUE if you want to get standardized coefficients
+model_summary(model)
+
+#step 4: plot the results; change type ="est" to type = "std" if you want to plot the standardized coefficients
+plot_model(model,  type ="est",  show.values = TRUE, vline.color = "#1B191999", line.size = 1.5, dot.size = 2.5, colors = "blue") + theme_bruce()
+
+
+
+```
+
+```{r}
+
+library(haven)
+library(bruceR)
+library(dplyr)
+library(ggstatsplot)
+library(performance)
+library(sjPlot)
+
+#step 1: build a model
+model<-lm(SWR ~ AS4 + ME1J, data = selected_data)
+
+
+#step 2: check the assumptions
+check_model(model)
+
+#step 3: summarize results; add ,std = TRUE if you want to get standardized coefficients
+model_summary(model)
+
+#step 4: plot the results; change type ="est" to type = "std" if you want to plot the standardized coefficients
+plot_model(model,  type ="est",  show.values = TRUE, vline.color = "#1B191999", line.size = 1.5, dot.size = 2.5, colors = "blue") + theme_bruce()
+
+
+
+```
+

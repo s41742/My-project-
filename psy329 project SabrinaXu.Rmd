@@ -154,4 +154,16 @@ plot_model(model,  type ="est",  show.values = TRUE, vline.color = "#1B191999", 
 
 
 ```
+```{r}
+library(tidyverse)
+library(bruceR)
+library(haven)
+
+Alpha(selected_data,vars = c("PEA14", "PEA13", "PEA18", "PEA15", "PEA12", "PEA18_1", "PEA16"))
+      
+
+```
+```{r}
+EFA(selected_data, vars = c("PEA14", "PEA13", "PEA18", "PEA15", "PEA12", "PEA18_1", "PEA16"), method = "pa", plot.scree = TRUE, nfactors = c("parallel"))
+```
 
